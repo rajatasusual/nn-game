@@ -9,6 +9,7 @@ function drag(ev) {
     ev.dataTransfer.setData("text", ev.target.innerHTML);
 }
 
+// Modify the drop function to include the check for tutorial guidance
 function drop(ev) {
     ev.preventDefault();
     var data = ev.dataTransfer.getData("text");
@@ -22,26 +23,60 @@ function drop(ev) {
     newLayer.style.backgroundColor = '#e0ffe0'; // Light green background
     newLayer.style.border = '1px solid #66bb66'; // Green border
 
-    // Show layer description
-    const layerInfo = ev.target.dataset.info || "Layer added.";
-    const infoMessage = document.createElement("p");
-    infoMessage.textContent = layerInfo; // Add info message
-    infoMessage.style.fontStyle = 'italic';
-    document.getElementById("workspace").appendChild(infoMessage);
-
     // Add click event to remove the layer
     newLayer.addEventListener('click', () => {
         newLayer.remove(); // Remove the layer on click
-        infoMessage.remove(); // Remove info message on layer removal
+        checkLayerAdded(newLayer.textContent); // Check if a layer is removed
     });
-
-    // Reset border and drop message
-    document.getElementById("workspace").style.border = "";
-    document.getElementById("drop-message").style.display = "none"; // Hide drop message
 
     // Append the new layer to the workspace
     document.getElementById("workspace").appendChild(newLayer);
+    checkLayerAdded(data); // Check if a layer is added
 }
+
+let tutorialSteps = [
+    "Welcome to the Neural Network Builder! Start by dragging the Input Layer into the workspace.",
+    "Great! Now add a Hidden Layer. This layer will help the network learn features.",
+    "Next, let's add an Output Layer. This layer provides the final output of the network.",
+    "Now that you've set up your layers, click the 'Train Model' button to start training!",
+    "Once training is complete, you can enhance your model by adding activation layers like ReLU or Sigmoid."
+];
+
+let currentStep = 0;
+
+function showTutorial() {
+    const modal = document.getElementById("tutorial-modal");
+    const tutorialText = document.getElementById("tutorial-text");
+    tutorialText.textContent = tutorialSteps[currentStep];
+    modal.style.display = "block";
+}
+
+document.getElementById("close-modal").onclick = function() {
+    document.getElementById("tutorial-modal").style.display = "none";
+};
+
+function checkLayerAdded(layerType) {
+    if (currentStep < tutorialSteps.length) {
+        // Check for specific layer types to advance the tutorial
+        if (
+            (currentStep === 0 && layerType === 'Input Layer') ||
+            (currentStep === 1 && layerType === 'Hidden Layer') ||
+            (currentStep === 2 && layerType === 'Output Layer')
+            (layerType === 'Train Model')
+        ) {
+            currentStep++;
+            if (currentStep < tutorialSteps.length) {
+                showTutorial();
+            }
+        }
+    }
+}
+
+// Add event listener to the tutorial button
+document.getElementById("start-tutorial").onclick = function() {
+    currentStep = 0; // Reset tutorial step
+    showTutorial();
+};
 
 // Tooltip functionality
 const tooltip = document.getElementById("tooltip");
@@ -122,4 +157,6 @@ function trainModel() {
             });
         }
     }, 100); // Update every second
+
+    checkLayerAdded('Train Model');
 }

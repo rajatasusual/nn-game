@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,11 +22,19 @@
     <div id="container">
         <div id="layer-palette">
             <h2>Layers</h2>
-            <div class="layer" draggable="true" ondragstart="drag(event)" data-info="Input Layer: The starting point of the network.">Input Layer</div>
-            <div class="layer" draggable="true" ondragstart="drag(event)" data-info="Hidden Layer: Processes inputs and learns features.">Hidden Layer</div>
-            <div class="layer" draggable="true" ondragstart="drag(event)" data-info="Output Layer: Final output of the network.">Output Layer</div>
-            <div class="layer" draggable="true" ondragstart="drag(event)" data-info="ReLU Activation: Applies the ReLU activation function.">ReLU Activation</div>
-            <div class="layer" draggable="true" ondragstart="drag(event)" data-info="Sigmoid Activation: Applies the sigmoid activation function.">Sigmoid Activation</div>
+            <div class="layer" draggable="true" ondragstart="drag(event)"
+                data-info="Input Layer: The starting point of the network.">Input Layer</div>
+            <div class="layer" draggable="true" ondragstart="drag(event)"
+                data-info="Hidden Layer: Processes inputs and learns features.">Hidden Layer</div>
+            <div class="layer" draggable="true" ondragstart="drag(event)"
+                data-info="Output Layer: Final output of the network.">Output Layer</div>
+            <div id="activation-layer-palette">
+                <h2>Activation Layers</h2>
+                <div class="layer" draggable="true" ondragstart="drag(event)"
+                    data-info="ReLU Activation: Applies the ReLU activation function.">ReLU Activation</div>
+                <div class="layer" draggable="true" ondragstart="drag(event)"
+                    data-info="Sigmoid Activation: Applies the sigmoid activation function.">Sigmoid Activation</div>
+            </div>
         </div>
 
         <div id="workspace" ondrop="drop(event)" ondragover="allowDrop(event)">
@@ -36,7 +45,14 @@
     </div>
 
     <div id="tooltip" class="tooltip"></div> <!-- Tooltip for educational content -->
+    <button id="start-tutorial" class="tutorial-button">Start Tutorial</button>
 
+    <div id="tutorial-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span id="close-modal" class="close">&times;</span>
+            <p id="tutorial-text"></p>
+        </div>
+    </div>
     <footer>
         <button id="train-button">Train Model</button>
         <div id="training-progress" style="display:none;">
@@ -56,4 +72,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
