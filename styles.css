@@ -1,51 +1,98 @@
 body {
     font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 20px;
 }
 
 h1, h2 {
     color: #333;
 }
 
-.layer, .added-layer {
-    padding: 10px;
-    margin: 5px;
-    display: inline-block;
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    cursor: pointer;
-    position: relative;
+#container {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
 }
 
-.layer:hover::after, 
-.added-layer:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    background-color: #333;
-    color: #fff;
-    padding: 5px;
+#layer-palette {
+    width: 30%;
+    background-color: #fff;
+    border: 1px solid #ccc;
     border-radius: 5px;
-    white-space: nowrap;
-    top: 100%; /* Position below the element */
-    left: 50%; /* Center it */
-    transform: translateX(-50%);
-    z-index: 1000;
-    opacity: 0.8;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.layer {
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #e0ffe0;
+    border: 1px solid #66bb66;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.layer:hover {
+    background-color: #c4e1c4;
+    transform: scale(1.05); /* Slightly enlarge on hover */
 }
 
 #workspace {
+    width: 65%;
+    background-color: #fff;
     border: 1px dashed #ccc;
+    border-radius: 5px;
+    padding: 20px;
+    min-height: 200px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#tooltip {
+    position: absolute;
+    background-color: #333;
+    color: #fff;
     padding: 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+    z-index: 1000;
+    display: none; /* Hidden by default */
+}
+
+footer {
+    text-align: center;
     margin-top: 20px;
 }
 
-#prediction-area {
-    margin-top: 20px;
-}
-
-textarea {
-    width: 100%;
-    height: 60px;
+#input-text {
+    padding: 10px;
     margin-top: 10px;
-    padding: 5px;
+    width: 80%;
+}
+
+#predict-button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#predict-button:hover {
+    background-color: #45a049;
+}
+
+#prediction-result {
+    margin-top: 10px;
+    font-weight: bold;
 }

@@ -5,33 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neural Network Builder</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script> <!-- Include TensorFlow.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <h1>Neural Network Builder</h1>
+    <header>
+        <h1>Neural Network Builder</h1>
+        <p>Drag and drop layers to build your neural network!</p>
+    </header>
+    
     <div id="container">
         <div id="layer-palette">
             <h2>Layers</h2>
-            <div class="layer" draggable="true" ondragstart="drag(event)" data-tooltip="Input Layer">Input Layer</div>
-            <div class="layer" draggable="true" ondragstart="drag(event)" data-tooltip="Hidden Layer">Hidden Layer</div>
-            <div class="layer" draggable="true" ondragstart="drag(event)" data-tooltip="Output Layer">Output Layer</div>
-            <div class="layer" draggable="true" ondragstart="drag(event)" data-tooltip="ReLU Activation">ReLU Activation</div>
-            <div class="layer" draggable="true" ondragstart="drag(event)" data-tooltip="Sigmoid Activation">Sigmoid Activation</div>
+            <div class="layer" draggable="true" ondragstart="drag(event)" data-info="Input Layer: The starting point of the network.">Input Layer</div>
+            <div class="layer" draggable="true" ondragstart="drag(event)" data-info="Hidden Layer: Processes inputs and learns features.">Hidden Layer</div>
+            <div class="layer" draggable="true" ondragstart="drag(event)" data-info="Output Layer: Final output of the network.">Output Layer</div>
+            <div class="layer" draggable="true" ondragstart="drag(event)" data-info="ReLU Activation: Applies the ReLU activation function.">ReLU Activation</div>
+            <div class="layer" draggable="true" ondragstart="drag(event)" data-info="Sigmoid Activation: Applies the sigmoid activation function.">Sigmoid Activation</div>
         </div>
         
         <div id="workspace" ondrop="drop(event)" ondragover="allowDrop(event)">
             <h2>Your Neural Network</h2>
             <p>Drag layers here to build your network.</p>
-            <button id="train-button">Train Model</button>
-            <div id="prediction-area">
-                <h3>Sentiment Analysis</h3>
-                <textarea id="input-text" placeholder="Enter text for sentiment analysis"></textarea>
-                <button id="predict-button">Predict Sentiment</button>
-                <div id="prediction-result"></div>
-            </div>
         </div>
     </div>
 
+    <div id="tooltip" class="tooltip"></div> <!-- Tooltip for educational content -->
+
+    <footer>
+        <button id="predict-button">Predict Sentiment</button>
+        <input type="text" id="input-text" placeholder="Type your text here...">
+        <div id="prediction-result"></div>
+    </footer>
+    
     <script src="script.js"></script>
 </body>
 </html>
