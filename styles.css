@@ -1,0 +1,51 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+.layer, .added-layer {
+    padding: 10px;
+    margin: 5px;
+    display: inline-block;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+}
+
+.layer:hover::after, 
+.added-layer:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
+    top: 100%; /* Position below the element */
+    left: 50%; /* Center it */
+    transform: translateX(-50%);
+    z-index: 1000;
+    opacity: 0.8;
+}
+
+#workspace {
+    border: 1px dashed #ccc;
+    padding: 10px;
+    margin-top: 20px;
+}
+
+#prediction-area {
+    margin-top: 20px;
+}
+
+textarea {
+    width: 100%;
+    height: 60px;
+    margin-top: 10px;
+    padding: 5px;
+}
