@@ -138,7 +138,7 @@ progress {
     padding: 0;
 }
 
-.tutorial-button {
+.button {
     padding: 10px 20px;
     background-color: #4CAF50; /* Green */
     color: white;
@@ -148,8 +148,20 @@ progress {
     margin: 10px;
 }
 
-.tutorial-button:hover {
+.button:hover {
     background-color: #45a049; /* Darker green */
+}
+
+.button:disabled {
+    background-color: #ccc; /* Gray background */
+    color: #666; /* Light gray text */
+    cursor: not-allowed; /* Not allowed cursor */
+}
+
+
+/* Style for the button when hovering */
+.button:hover:disabled + .tooltip {
+    display: block; /* Show tooltip on hover */
 }
 
 .modal {
@@ -185,4 +197,10 @@ progress {
     color: black;
     text-decoration: none;
     cursor: pointer;
+}
+
+.tutorial-active {
+    background-color: #fff; /* Change button color to green */
+    color: #4caf50; /* Change text color to white */
+    border: 1px solid #4caf50; /* Darker green border */
 }

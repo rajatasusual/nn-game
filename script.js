@@ -1,3 +1,5 @@
+let TUTORIAL = false;
+
 function allowDrop(ev) {
     ev.preventDefault();
     // Highlight the workspace when a layer is dragged over it
@@ -7,9 +9,10 @@ function allowDrop(ev) {
 
 function drag(ev) {
     ev.dataTransfer.setData("text", ev.target.innerHTML);
+    // Hide tooltip when dragging starts
+    tooltip.style.display = 'none'; 
 }
 
-// Modify the drop function to include the check for tutorial guidance
 function drop(ev) {
     ev.preventDefault();
     var data = ev.dataTransfer.getData("text");
@@ -27,12 +30,18 @@ function drop(ev) {
     newLayer.addEventListener('click', () => {
         newLayer.remove(); // Remove the layer on click
         checkLayerAdded(newLayer.textContent); // Check if a layer is removed
+        checkLayerOrder(); // Check the order after removal
     });
 
     // Append the new layer to the workspace
     document.getElementById("workspace").appendChild(newLayer);
     checkLayerAdded(data); // Check if a layer is added
+    checkLayerOrder(); // Check the order after adding a layer
+
+    // Remove the dashed border after dropping
+    document.getElementById("workspace").style.border = ""; 
 }
+
 
 let tutorialSteps = [
     "Welcome to the Neural Network Builder! Start by dragging the Input Layer into the workspace.",
@@ -49,11 +58,32 @@ function showTutorial() {
     const tutorialText = document.getElementById("tutorial-text");
     tutorialText.textContent = tutorialSteps[currentStep];
     modal.style.display = "block";
+    document.getElementById("start-tutorial").classList.add("tutorial-active"); // Indicate tutorial is active
 }
 
-document.getElementById("close-modal").onclick = function() {
+// Update the button when the tutorial ends
+function endTutorial() {
+    TUTORIAL = false;
+    document.getElementById("tutorial-modal").style.display = "none";
+    document.getElementById("start-tutorial").classList.remove("tutorial-active"); // Reset button appearance
+}
+
+document.getElementById("close-modal").onclick = function () {
     document.getElementById("tutorial-modal").style.display = "none";
 };
+
+window.onclick = function (event) {
+    const modal = document.getElementById("tutorial-modal");
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
+};
+
+document.addEventListener('keydown', function (event) {
+    if (event.key === "Escape") {
+        document.getElementById("tutorial-modal").style.display = "none";
+    }
+});
 
 function checkLayerAdded(layerType) {
     if (currentStep < tutorialSteps.length) {
@@ -61,20 +91,60 @@ function checkLayerAdded(layerType) {
         if (
             (currentStep === 0 && layerType === 'Input Layer') ||
             (currentStep === 1 && layerType === 'Hidden Layer') ||
-            (currentStep === 2 && layerType === 'Output Layer')
+            (currentStep === 2 && layerType === 'Output Layer') ||
             (layerType === 'Train Model')
         ) {
             currentStep++;
             if (currentStep < tutorialSteps.length) {
-                showTutorial();
+                TUTORIAL && showTutorial();
+            } else {
+                endTutorial(); // End tutorial if steps are complete
             }
+        } else if (currentStep > 0) {
+            const tutorialText = document.getElementById("tutorial-text");
+
+            // If layers are added but not in the right order, provide guidance
+            if (layerType === 'Hidden Layer' && currentStep === 1) {
+                tutorialText.textContent = "You're doing great! Remember to add the Output Layer next.";
+            } else if (layerType === 'Output Layer' && currentStep === 2) {
+                tutorialText.textContent = "Excellent! Now you can train your model.";
+            } else {
+                tutorialText.textContent = "Make sure to follow the tutorial steps!";
+            }
+            TUTORIAL && showTutorial(); // Show the updated tutorial text
         }
     }
 }
 
-// Add event listener to the tutorial button
-document.getElementById("start-tutorial").onclick = function() {
+
+function checkLayerOrder() {
+    const layers = document.querySelectorAll('.added-layer');
+    const layerTypes = Array.from(layers).map(layer => layer.textContent);
+
+    // Define the correct order
+    const correctOrder = ['Input Layer', 'Hidden Layer', 'Output Layer'];
+    let currentIndex = 0;
+
+    // Enable the train button if layers are added in the correct order
+    const trainButton = document.getElementById("train-button");
+
+    // Loop through layerTypes to check for the presence of core layers
+    for (const layerType of layerTypes) {
+        if (layerType === correctOrder[currentIndex]) {
+            currentIndex++;
+        }
+        // If we've found all core layers in order, enable the train button
+        if (currentIndex === correctOrder.length && layerTypes.pop() === 'Output Layer') {
+            trainButton.disabled = false; // Enable the train button
+            return;
+        }
+    }
+    trainButton.disabled = true; // Disable if not all core layers are in correct order
+}
+
+document.getElementById("start-tutorial").onclick = function () {
     currentStep = 0; // Reset tutorial step
+    TUTORIAL = true;
     showTutorial();
 };
 
@@ -101,6 +171,26 @@ document.querySelectorAll('.layer').forEach(layer => {
 });
 
 document.getElementById("train-button").addEventListener("click", trainModel);
+
+const trainButton = document.getElementById("train-button");
+
+// Position the tooltip near the train button
+trainButton.addEventListener("mouseenter", (event) => {
+    const rect = trainButton.getBoundingClientRect();
+    tooltip.className = "tooltip";
+    tooltip.textContent = "Please arrange layers in the correct order: Input → Hidden → Output.";
+    
+    tooltip.style.display = "block";
+    tooltip.style.left = `${rect.left + window.scrollX}px`;
+    tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`; // Position below the button
+});
+
+trainButton.addEventListener("mouseleave", () => {
+    tooltip.style.display = "none"; // Hide tooltip
+});
+
+// Initially disable the train button
+trainButton.disabled = true;
 
 function trainModel() {
     const progressBar = document.getElementById("progress-bar");
