@@ -1,5 +1,8 @@
 function allowDrop(ev) {
     ev.preventDefault();
+    // Highlight the workspace when a layer is dragged over it
+    document.getElementById("workspace").style.border = "2px dashed #66bb66";
+    document.getElementById("drop-message").style.display = "block"; // Show drop message
 }
 
 function drag(ev) {
@@ -19,10 +22,22 @@ function drop(ev) {
     newLayer.style.backgroundColor = '#e0ffe0'; // Light green background
     newLayer.style.border = '1px solid #66bb66'; // Green border
 
+    // Show layer description
+    const layerInfo = ev.target.dataset.info || "Layer added.";
+    const infoMessage = document.createElement("p");
+    infoMessage.textContent = layerInfo; // Add info message
+    infoMessage.style.fontStyle = 'italic';
+    document.getElementById("workspace").appendChild(infoMessage);
+
     // Add click event to remove the layer
     newLayer.addEventListener('click', () => {
         newLayer.remove(); // Remove the layer on click
+        infoMessage.remove(); // Remove info message on layer removal
     });
+
+    // Reset border and drop message
+    document.getElementById("workspace").style.border = "";
+    document.getElementById("drop-message").style.display = "none"; // Hide drop message
 
     // Append the new layer to the workspace
     document.getElementById("workspace").appendChild(newLayer);
@@ -50,108 +65,61 @@ document.querySelectorAll('.layer').forEach(layer => {
     });
 });
 
-async function loadModel() {
-    try {
-        const model = await tf.loadLayersModel('https://storage.googleapis.com/tfjs-models/tfjs/sentiment_cnn_v1/model.json');
-        return model;
-    } catch (error) {
-        console.error('Error loading the model:', error);
-    }
-}
+document.getElementById("train-button").addEventListener("click", trainModel);
 
-// Predict sentiment when the button is clicked
-/*document.getElementById('predict-button').addEventListener('click', async () => {
-    const inputText = document.getElementById('input-text').value;
-    const model = await loadModel();
-    const prediction = await predictSentiment(model, inputText);
-    document.getElementById('prediction-result').innerText = `Predicted Sentiment: ${prediction}`;
-});
-*/
-
-// Function to predict sentiment
-async function predictSentiment(model, text) {
-    const inputTensor = preprocess(text); // Call the preprocess function
-    const prediction = model.predict(inputTensor);
-
-    // Get the predicted class from the output
-    const classId = prediction.argMax(-1).dataSync()[0]; // Assuming binary classification (0 or 1)
-    return classId === 0 ? 'Negative' : 'Positive'; // Adjust based on your model's output
-}
-
-// Implement the preprocess function
-function preprocess(text) {
-    // Normalize text
-    text = text.toLowerCase().replace(/[^\w\s]|_/g, '').replace(/\s+/g, ' ');
-
-    // Tokenization using TensorFlow.js
-    const tokens = text.split(/\s+/); // Simple tokenization
-
-    // Example vocabulary mapping using the IMDB dataset (for demonstration)
-    const vocabulary = {
-        'the': 1,
-        'and': 2,
-        'is': 3,
-        'a': 4,
-        // Add more words based on the IMDB dataset...
-    };
-
-    // Convert tokens to numerical representation
-    const tokenIndices = tokens.map(token => vocabulary[token] || 0);
-
-    // Create a tensor of shape [1, maxLength]
-    const maxLength = 20; // Adjust based on your model's requirements
-    const paddedIndices = tokenIndices.slice(0, maxLength).concat(Array(maxLength - tokenIndices.length).fill(0));
-
-    return tf.tensor2d([paddedIndices], [1, maxLength]); // Create a 2D tensor
-}
-
-document.getElementById('train-button').addEventListener('click', () => {
+function trainModel() {
     const progressBar = document.getElementById("progress-bar");
     const progressText = document.getElementById("progress-text");
-    const trainingProgress = document.getElementById("training-progress");
+    const trainingMetrics = document.getElementById("training-metrics");
     const lossValue = document.getElementById("loss-value");
     const accuracyValue = document.getElementById("accuracy-value");
-    const trainingMetrics = document.getElementById("training-metrics");
-    const activationsList = document.getElementById("activations-list");
     const layerActivations = document.getElementById("layer-activations");
+    const activationsList = document.getElementById("activations-list");
 
-    trainingProgress.style.display = 'block'; // Show progress bar
-    trainingMetrics.style.display = 'block'; // Show metrics section
-    layerActivations.style.display = 'block'; // Show layer activations
-    progressBar.value = 0; // Reset progress bar
-    progressText.textContent = 'Training...';
-    lossValue.textContent = '0.00'; // Reset loss
-    accuracyValue.textContent = '0.00'; // Reset accuracy
+    // Reset the progress bar and text
+    progressBar.value = 0;
+    progressText.textContent = "Training... 0%";
+    trainingMetrics.style.display = "none";
+    layerActivations.style.display = "none";
 
+    // Show the training progress
+    document.getElementById("training-progress").style.display = "block";
+
+    const layers = document.querySelectorAll('.added-layer');
     let progress = 0;
-    let loss = 0;
-    let accuracy = 0;
+    let baseLoss = 1.0; // Starting loss
+    let baseAccuracy = 50; // Starting accuracy
 
-    const trainingInterval = setInterval(() => {
-        progress += 10; // Increase progress
-        progressBar.value = progress;
-        progressText.textContent = `Training... ${progress}%`;
+    let trainingInterval = setInterval(() => {
+        if (progress < 100) {
+            progress += 10; // Increase progress
+            progressBar.value = progress;
 
-        // Update mock loss and accuracy
-        loss += Math.random() * 0.1; // Simulated loss (0 to 1)
-        accuracy = Math.min(100, accuracy + Math.random() * 10); // Simulated accuracy (0 to 100)
+            // Adjust metrics based on the number of layers
+            const numLayers = layers.length;
+            if (numLayers > 0) {
+                baseLoss *= Math.exp(-0.05 * numLayers); // Simulate loss reduction
+                baseAccuracy += Math.min(10, numLayers * 5); // Simulate accuracy increase
+            }
 
-        lossValue.textContent = loss.toFixed(2);
-        accuracyValue.textContent = accuracy.toFixed(2);
+            lossValue.textContent = baseLoss.toFixed(2);
+            accuracyValue.textContent = Math.min(100, baseAccuracy).toFixed(2);
+            progressText.textContent = `Training... ${progress}%`;
 
-        // Update layer activations
-        const layerNames = ["Input Layer", "Hidden Layer", "Output Layer"];
-        const randomLayer = layerNames[Math.floor(Math.random() * layerNames.length)];
-        const activation = document.createElement("li");
-        activation.textContent = `${randomLayer} activated at ${loss.toFixed(2)} loss`;
-        activationsList.appendChild(activation);
-
-        if (progress >= 100) {
+        } else {
             clearInterval(trainingInterval);
-            progressText.textContent = `Training complete! Final Accuracy: ${accuracy.toFixed(2)}%`; // Show final accuracy
-            setTimeout(() => {
-                trainingProgress.style.display = 'none'; // Hide progress after a moment
-            }, 2000);
+            progressText.textContent = "Training Complete!";
+            trainingMetrics.style.display = "block";
+            layerActivations.style.display = "block";
+
+            // Simulate layer activations
+            activationsList.innerHTML = ""; // Clear previous activations
+            layers.forEach(layer => {
+                const activationValue = (Math.random() * 100).toFixed(2);
+                const listItem = document.createElement("li");
+                listItem.textContent = `${layer.textContent} Activation: ${activationValue}`;
+                activationsList.appendChild(listItem);
+            });
         }
-    }, 500); // Update every 500ms to simulate training time
-});
+    }, 100); // Update every second
+}
