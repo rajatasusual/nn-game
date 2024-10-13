@@ -60,12 +60,13 @@ async function loadModel() {
 }
 
 // Predict sentiment when the button is clicked
-document.getElementById('predict-button').addEventListener('click', async () => {
+/*document.getElementById('predict-button').addEventListener('click', async () => {
     const inputText = document.getElementById('input-text').value;
     const model = await loadModel();
     const prediction = await predictSentiment(model, inputText);
     document.getElementById('prediction-result').innerText = `Predicted Sentiment: ${prediction}`;
 });
+*/
 
 // Function to predict sentiment
 async function predictSentiment(model, text) {
@@ -103,3 +104,54 @@ function preprocess(text) {
 
     return tf.tensor2d([paddedIndices], [1, maxLength]); // Create a 2D tensor
 }
+
+document.getElementById('train-button').addEventListener('click', () => {
+    const progressBar = document.getElementById("progress-bar");
+    const progressText = document.getElementById("progress-text");
+    const trainingProgress = document.getElementById("training-progress");
+    const lossValue = document.getElementById("loss-value");
+    const accuracyValue = document.getElementById("accuracy-value");
+    const trainingMetrics = document.getElementById("training-metrics");
+    const activationsList = document.getElementById("activations-list");
+    const layerActivations = document.getElementById("layer-activations");
+
+    trainingProgress.style.display = 'block'; // Show progress bar
+    trainingMetrics.style.display = 'block'; // Show metrics section
+    layerActivations.style.display = 'block'; // Show layer activations
+    progressBar.value = 0; // Reset progress bar
+    progressText.textContent = 'Training...';
+    lossValue.textContent = '0.00'; // Reset loss
+    accuracyValue.textContent = '0.00'; // Reset accuracy
+
+    let progress = 0;
+    let loss = 0;
+    let accuracy = 0;
+
+    const trainingInterval = setInterval(() => {
+        progress += 10; // Increase progress
+        progressBar.value = progress;
+        progressText.textContent = `Training... ${progress}%`;
+
+        // Update mock loss and accuracy
+        loss += Math.random() * 0.1; // Simulated loss (0 to 1)
+        accuracy = Math.min(100, accuracy + Math.random() * 10); // Simulated accuracy (0 to 100)
+
+        lossValue.textContent = loss.toFixed(2);
+        accuracyValue.textContent = accuracy.toFixed(2);
+
+        // Update layer activations
+        const layerNames = ["Input Layer", "Hidden Layer", "Output Layer"];
+        const randomLayer = layerNames[Math.floor(Math.random() * layerNames.length)];
+        const activation = document.createElement("li");
+        activation.textContent = `${randomLayer} activated at ${loss.toFixed(2)} loss`;
+        activationsList.appendChild(activation);
+
+        if (progress >= 100) {
+            clearInterval(trainingInterval);
+            progressText.textContent = `Training complete! Final Accuracy: ${accuracy.toFixed(2)}%`; // Show final accuracy
+            setTimeout(() => {
+                trainingProgress.style.display = 'none'; // Hide progress after a moment
+            }, 2000);
+        }
+    }, 500); // Update every 500ms to simulate training time
+});

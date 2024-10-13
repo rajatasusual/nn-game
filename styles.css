@@ -96,3 +96,34 @@ footer {
     margin-top: 10px;
     font-weight: bold;
 }
+
+#training-progress {
+    margin-top: 20px;
+    text-align: center;
+}
+
+progress {
+    width: 100%;
+    height: 20px;
+}
+
+#prediction-result {
+    margin-top: 20px;
+    font-weight: bold;
+    color: #4CAF50; /* Success color */
+}
+
+#training-metrics {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#layer-activations {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#layer-activations ul {
+    list-style-type: none;
+    padding: 0;
+}
