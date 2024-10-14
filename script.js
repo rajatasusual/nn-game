@@ -167,6 +167,7 @@ function checkLayerOrder() {
         }
         if (currentIndex === correctOrder.length && layerTypes[layerTypes.length - 1] === 'Output Layer') {
             trainButton.disabled = false;
+            return;
         }
     }
     trainButton.disabled = true; // Disable if not all core layers are in correct order
@@ -245,18 +246,40 @@ function trainModel() {
     let baseLoss = 1.0; // Starting loss
     let baseAccuracy = 50; // Starting accuracy
 
+    // Simulate training over time
     let trainingInterval = setInterval(() => {
         if (progress < 100) {
             progress += 10; // Increase progress
             progressBar.value = progress;
 
-            // Adjust metrics based on the number of layers
-            const numLayers = layers.length;
-            if (numLayers > 0) {
-                baseLoss *= Math.exp(-0.05 * numLayers); // Simulate loss reduction
-                baseAccuracy += Math.min(10, numLayers * 5); // Simulate accuracy increase
-            }
+            // Adjust metrics based on the layer configuration
+            let totalNeurons = 0;
+            let activationMultiplier = 1.0;
 
+            layers.forEach(layer => {
+                if (isDenseLayer(layer)) {
+                    totalNeurons += parseInt(layer.neurons) || 1; // Add the number of neurons
+
+                    // Modify performance based on activation function
+                    switch (layer.activation) {
+                        case 'relu':
+                            activationMultiplier *= 0.95; // ReLU generally helps reduce loss
+                            break;
+                        case 'sigmoid':
+                            activationMultiplier *= 1.05; // Sigmoid can be slower in convergence
+                            break;
+                        case 'tanh':
+                            activationMultiplier *= 0.9; // Tanh can be more efficient
+                            break;
+                    }
+                }
+            });
+
+            // Simulate loss reduction and accuracy improvement based on the configuration
+            baseLoss *= Math.exp(-0.05 * totalNeurons * activationMultiplier); // Simulate loss reduction
+            baseAccuracy += Math.min(10, totalNeurons * activationMultiplier); // Simulate accuracy increase
+
+            // Update UI with new values
             lossValue.textContent = baseLoss.toFixed(2);
             accuracyValue.textContent = Math.min(100, baseAccuracy).toFixed(2);
             progressText.textContent = `Training... ${progress}%`;
