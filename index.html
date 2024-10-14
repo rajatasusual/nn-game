@@ -9,14 +9,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
-<body>
+<body oncontextmenu="return false;">
     <header>
         <h1>Neural Network Builder</h1>
         <p>Drag and drop layers to build your neural network!</p>
         <h2>How to Guide</h2>
         <p>1. Drag layers from the palette to the workspace.</p>
-        <p>2. Click on a layer in the workspace to remove it.</p>
-        <p>3. Use the "Train Model" button to simulate training your network.</p>
+        <p>2. Click on a layer in the workspace to configure it.</p>
+        <p> 3. Right click on a layer to delete it.</p>
+        <p>4. Use the "Train Model" button to simulate training your network.</p>
     </header>
 
     <div id="container">
@@ -39,7 +40,6 @@
 
         <div id="workspace" ondrop="drop(event)" ondragover="allowDrop(event)">
             <h2>Your Neural Network</h2>
-            <p>Drag layers here to build your network.</p>
             <div id="drop-message" style="display:none;">Drop your layer here!</div>
         </div>
     </div>
@@ -50,6 +50,14 @@
         <div class="modal-content">
             <span id="close-modal" class="close">&times;</span>
             <p id="tutorial-text"></p>
+        </div>
+    </div>
+    <div id="configModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeConfigModal()">&times;</span>
+            <h2>Configure Layer</h2>
+            <div id="configOptions"></div>
+            <button id="saveConfigBtn" class="button">Save Configuration</button>
         </div>
     </div>
     <footer>

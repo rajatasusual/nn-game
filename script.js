@@ -10,36 +10,68 @@ function allowDrop(ev) {
 function drag(ev) {
     ev.dataTransfer.setData("text", ev.target.innerHTML);
     // Hide tooltip when dragging starts
-    tooltip.style.display = 'none'; 
+    tooltip.style.display = 'none';
 }
 
 function drop(ev) {
+    // Prevent default behavior (Prevent file from being opened)
     ev.preventDefault();
+
+    document.getElementById("drop-message").style.display = "none";
+
     var data = ev.dataTransfer.getData("text");
+    const draggedElement = document.querySelector(`.layer[data-layer="${data}"]`);
 
-    // Create a new layer element
-    var newLayer = document.createElement("div");
-    newLayer.textContent = data;
-    newLayer.className = 'layer added-layer removable'; // Add removable class
-    newLayer.style.padding = '10px';
-    newLayer.style.margin = '5px 0';
-    newLayer.style.backgroundColor = '#e0ffe0'; // Light green background
-    newLayer.style.border = '1px solid #66bb66'; // Green border
+    // Reorder logic: Check if we're dragging an existing layer
+    if (draggedElement) {
+        const workspace = document.getElementById("workspace");
 
-    // Add click event to remove the layer
-    newLayer.addEventListener('click', () => {
-        newLayer.remove(); // Remove the layer on click
-        checkLayerAdded(newLayer.textContent); // Check if a layer is removed
-        checkLayerOrder(); // Check the order after removal
-    });
+        // Find where to insert the dragged element (for reordering)
+        const closestLayer = [...workspace.children].find(el => el !== draggedElement && ev.clientY < el.getBoundingClientRect().top);
 
-    // Append the new layer to the workspace
-    document.getElementById("workspace").appendChild(newLayer);
-    checkLayerAdded(data); // Check if a layer is added
-    checkLayerOrder(); // Check the order after adding a layer
+        workspace.insertBefore(draggedElement, closestLayer || null); // Insert element before the closest layer
+        checkLayerOrder(); // Check and update layer order
+    } else {
+        // Create a new layer element
+        var newLayer = document.createElement("div");
+        newLayer.textContent = data;
+        newLayer.className = 'layer added-layer removable'; // Add removable class
+        newLayer.style.padding = '10px';
+        newLayer.style.margin = '5px 0';
+        newLayer.style.backgroundColor = '#e0ffe0'; // Light green background
+        newLayer.style.border = '1px solid #66bb66'; // Green border
+
+        newLayer.name = data;
+
+        function dragStart(ev) {
+            ev.dataTransfer.setData("text", ev.target.getAttribute("data-layer"));
+        }
+        
+        newLayer.setAttribute("data-layer", data + "-" + Date.now()); // For uniqueness
+    
+        // Make the layer draggable
+        newLayer.setAttribute("draggable", "true");
+        newLayer.addEventListener("dragstart", dragStart);
+
+        // Add click event to remove the layer
+        newLayer.addEventListener('contextmenu', () => {
+            newLayer.remove(); // Remove the layer on click
+            checkLayerAdded(newLayer.textContent); // Check if a layer is removed
+            checkLayerOrder(); // Check the order after removal
+        });
+
+        newLayer.addEventListener('click', function () {
+            openLayerConfigModal(newLayer);
+        });
+
+        // Append the new layer to the workspace
+        document.getElementById("workspace").appendChild(newLayer);
+        checkLayerAdded(data); // Check if a layer is added
+        checkLayerOrder(); // Check the order after adding a layer   
+    }
 
     // Remove the dashed border after dropping
-    document.getElementById("workspace").style.border = ""; 
+    document.getElementById("workspace").style.border = "";
 }
 
 
@@ -119,7 +151,7 @@ function checkLayerAdded(layerType) {
 
 function checkLayerOrder() {
     const layers = document.querySelectorAll('.added-layer');
-    const layerTypes = Array.from(layers).map(layer => layer.textContent);
+    const layerTypes = Array.from(layers).map(layer => layer.name);
 
     // Define the correct order
     const correctOrder = ['Input Layer', 'Hidden Layer', 'Output Layer'];
@@ -133,10 +165,8 @@ function checkLayerOrder() {
         if (layerType === correctOrder[currentIndex]) {
             currentIndex++;
         }
-        // If we've found all core layers in order, enable the train button
-        if (currentIndex === correctOrder.length && layerTypes.pop() === 'Output Layer') {
-            trainButton.disabled = false; // Enable the train button
-            return;
+        if (currentIndex === correctOrder.length && layerTypes[layerTypes.length - 1] === 'Output Layer') {
+            trainButton.disabled = false;
         }
     }
     trainButton.disabled = true; // Disable if not all core layers are in correct order
@@ -179,7 +209,7 @@ trainButton.addEventListener("mouseenter", (event) => {
     const rect = trainButton.getBoundingClientRect();
     tooltip.className = "tooltip";
     tooltip.textContent = "Please arrange layers in the correct order: Input → Hidden → Output.";
-    
+
     tooltip.style.display = "block";
     tooltip.style.left = `${rect.left + window.scrollX}px`;
     tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`; // Position below the button
@@ -249,4 +279,56 @@ function trainModel() {
     }, 100); // Update every second
 
     checkLayerAdded('Train Model');
+}
+
+function isDenseLayer(layer) {
+    return layer.name === 'Input Layer' || layer.name === 'Output Layer' || layer.name === 'Hidden Layer';
+}
+
+function openLayerConfigModal(layer) {
+    const configOptions = document.getElementById('configOptions');
+    configOptions.innerHTML = ''; // Clear previous content
+
+    if (isDenseLayer(layer)) {
+        configOptions.innerHTML = `
+            <label for="neurons">Number of Neurons:</label>
+            <input type="number" id="neurons" name="neurons" min="1" value="${layer.neurons || 1}">
+            <label for="activation">Activation Function:</label>
+            <select id="activation" name="activation">
+                <option value="relu" ${layer.activation === 'relu' ? 'selected' : ''}>ReLU</option>
+                <option value="sigmoid" ${layer.activation === 'sigmoid' ? 'selected' : ''}>Sigmoid</option>
+                <option value="tanh" ${layer.activation === 'tanh' ? 'selected' : ''}>Tanh</option>
+            </select>
+        `;
+    }
+
+    document.getElementById('configModal').style.display = 'block';
+
+    document.getElementById('saveConfigBtn').onclick = function () {
+        saveLayerConfiguration(layer);
+    };
+}
+
+function saveLayerConfiguration(layer) {
+    const neuronsInput = document.getElementById('neurons');
+    const activationInput = document.getElementById('activation');
+
+    // Update layer configuration
+    if (isDenseLayer(layer)) {
+        layer.neurons = neuronsInput.value;
+        layer.activation = activationInput.value;
+    }
+
+    closeConfigModal();
+    updateLayerDisplay(layer);
+}
+
+function updateLayerDisplay(layer) {
+    if (isDenseLayer(layer)) {
+        layer.innerText = `${layer.name} (Dense with ${layer.neurons} neurons, ${layer.activation} activation)`;
+    }
+}
+
+function closeConfigModal() {
+    document.getElementById('configModal').style.display = 'none';
 }
