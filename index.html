@@ -42,6 +42,23 @@
             <h2>Your Neural Network</h2>
             <div id="drop-message" style="display:none;">Drop your layer here!</div>
         </div>
+        <div>
+            <button id="start-tutorial" class="button">Start Tutorial</button>
+        <button id="train-button" class="button">Train Model</button>
+        <div id="training-progress" style="display:none;">
+            <progress id="progress-bar" value="0" max="100"></progress>
+            <span id="progress-text"></span>
+        </div>
+        <div id="prediction-result"></div>
+        <div id="training-metrics" style="display:none;">
+            <p>Loss: <span id="loss-value">0.00</span></p>
+            <p>Accuracy: <span id="accuracy-value">0.00</span></p>
+        </div>
+        <div id="layer-activations" style="display:none;">
+            <h3>Layer Activations</h3>
+            <ul id="activations-list"></ul>
+        </div>
+        </div>
     </div>
 
     <div id="tooltip" class="tooltip"></div> <!-- Tooltip for educational content -->
@@ -60,23 +77,6 @@
             <button id="saveConfigBtn" class="button">Save Configuration</button>
         </div>
     </div>
-    <footer>
-        <button id="start-tutorial" class="button">Start Tutorial</button>
-        <button id="train-button" class="button">Train Model</button>
-        <div id="training-progress" style="display:none;">
-            <progress id="progress-bar" value="0" max="100"></progress>
-            <span id="progress-text"></span>
-        </div>
-        <div id="prediction-result"></div>
-        <div id="training-metrics" style="display:none;">
-            <p>Loss: <span id="loss-value">0.00</span></p>
-            <p>Accuracy: <span id="accuracy-value">0.00</span></p>
-        </div>
-        <div id="layer-activations" style="display:none;">
-            <h3>Layer Activations</h3>
-            <ul id="activations-list"></ul>
-        </div>
-    </footer>
 
     <script src="script.js"></script>
 </body>
